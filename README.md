@@ -22,6 +22,3 @@ This repository demonstrates an end-to-end DevSecOps style environment with:
 ```bash
 docker compose up -d --build
 
-
-
-
