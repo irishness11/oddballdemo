@@ -1,0 +1,5 @@
+{ "recommendations": [
+  "hashicorp.terraform","redhat.vscode-yaml",
+  "ms-azuretools.vscode-docker","ms-kubernetes-tools.vscode-kubernetes-tools",
+  "redhat.ansible","github.vscode-github-actions"
+]}

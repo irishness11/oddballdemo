@@ -1,0 +1,36 @@
+name: build-scan-push-deploy
+on:
+  push: { branches: [ "main" ] }
+  workflow_dispatch:
+env:
+  AWS_REGION:    ${{ secrets.AWS_REGION }}
+  ECR_REPO:      ${{ secrets.ECR_REPO }}
+  K8S_NAMESPACE: ${{ secrets.K8S_NAMESPACE || 'default' }}
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ env.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+      - name: Build image
+        run: docker build -t $ECR_REPO:latest ./app
+      - name: Trivy scan (non-blocking)
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          image-ref: ${{ env.ECR_REPO }}:latest
+          exit-code: '0'
+      - name: Push image
+        run: docker push $ECR_REPO:latest
+      - uses: azure/setup-helm@v4
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name oddball-eks --region $AWS_REGION
+      - name: Helm upgrade
+        run: |
+          helm upgrade --install oddball-svc ./chart \
+            --namespace "$K8S_NAMESPACE" --create-namespace \
+            --set image.repository="$ECR_REPO" --set image.tag=latest

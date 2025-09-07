@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oddball-svc
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: { app: oddball-svc }
+  template:
+    metadata:
+      labels: { app: oddball-svc }
+    spec:
+      containers:
+      - name: app
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        ports: [{ containerPort: {{ .Values.service.targetPort }} }]

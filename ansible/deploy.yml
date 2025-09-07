@@ -1,0 +1,27 @@
+- name: Deploy Oddball service to EKS with Helm
+  hosts: local
+  gather_facts: false
+  collections: [kubernetes.core]
+  vars:
+    release_name: oddball-svc
+    namespace: default
+    kubeconfig: "{{ lookup('env','KUBECONFIG') | default('~/.kube/config') }}"
+    image_repo: "{{ lookup('env','ECR_REPO') | default('') }}"
+  tasks:
+    - name: Ensure namespace exists
+      k8s:
+        kubeconfig: "{{ kubeconfig }}"
+        api_version: v1
+        kind: Namespace
+        name: "{{ namespace }}"
+        state: present
+    - name: Helm upgrade/install
+      helm:
+        kubeconfig: "{{ kubeconfig }}"
+        name: "{{ release_name }}"
+        chart_path: "{{ playbook_dir }}/../chart"
+        release_namespace: "{{ namespace }}"
+        values:
+          image:
+            repository: "{{ image_repo }}"
+            tag: "latest"
