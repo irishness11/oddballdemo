@@ -152,8 +152,4 @@ EKS warning about inline_policy in the module is known and safe to ignore.
 If you ever change VPC subnets/CIDR, destroy EKS first, then apply VPC, then re-apply EKS to avoid dependency cycles.
 
 
----
-
-Anything else you want baked into the README (like exact module versions or the `terraform.tfvars` you used)? I can slot that in too.
-
 
